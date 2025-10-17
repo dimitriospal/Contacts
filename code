@@ -1,0 +1,520 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+
+#define MAX_CONTACTS 100     //max epafes 100
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////     DOMI      ///////////////////////////////
+
+typedef struct {				//domi gia to 1o task gia tis epafes
+    int id;
+    char name[50];
+    char surname[50];
+    char address[100];
+    char phone[15];
+    char email[50];
+    char creation_date[30];
+} Contact;
+
+Contact contacts[MAX_CONTACTS];    // pinakas 
+int contact_count=0;    			// na min perasoun tis 100 epafes
+
+//////////////////////////    TELOS DOMIS      ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////    WRA KAI IMEROMINIA      ///////////////////////////////
+// sinartisi gia wra kai imerominia
+
+void get_current_time(char *buffer, size_t size) {
+    time_t t = time(NULL);
+    struct tm *tm_info=localtime(&t);
+    strftime(buffer, size, "%I:%M:%S %p, %d/%m/%Y", tm_info);
+}
+
+//////////////////////////    TELOS WRA KAI IMEROMINIA      ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////     EMFANISI STOIXEIWN EPAFIS      ///////////////////////////////
+// sinartisi gia tin emfanisi stoixeiwn epafis
+
+void display_contact(Contact contact) {
+    printf("ID: %d\n", contact.id);
+    printf("Name: %s\n", contact.name);
+    printf("Surname: %s\n", contact.surname);
+    printf("Address: %s\n", contact.address);
+    printf("Phone: %s\n", contact.phone);
+    printf("Email: %s\n", contact.email);
+    printf("Creation Date: %s\n", contact.creation_date);
+    printf("------------------------------------------------\n");
+}
+
+//////////////////////////     TELOS EMFANISI STOIXEIWN EPAFIS      ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////     APOTHIKEYSI EPAFWN      ///////////////////////////////
+// sinartisi gia tin apothikeusi tis epafis
+
+void save_contact_to_file(Contact contact) {
+    char filename[200];
+    snprintf(filename, sizeof(filename), "contacts/%s_%s_%d.txt", contact.name, contact.surname, contact.id);
+    FILE *file = fopen(filename, "w");
+    if (file!=NULL) {				// elegxei an anoije to arxeio
+        fprintf(file, "Contact time creation: %s\n\n", contact.creation_date);
+        fprintf(file, "Name: %s\n", contact.name);
+        fprintf(file, "Surname: %s\n", contact.surname);		//emfanisi stoixeiwn
+        fprintf(file, "Address: %s\n", contact.address);
+        fprintf(file, "Phone: %s\n", contact.phone);
+        fprintf(file, "Email: %s\n", contact.email);
+        fclose(file);
+    } else {
+        printf("Error saving contact.\n");		// ean den anoije to arxeio
+    }
+}
+
+//////////////////////////     TELOS APOTHIKEYSI EPAFWN      ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////     PLIROFORIES EPAFIS      ///////////////////////////////
+//sinartisi pou diavazei tis plirofories mias epafis
+
+Contact read_contact_from_file(char *filename) {
+    Contact contact;
+    FILE *file=fopen(filename, "r");
+    if (file !=NULL) {		//edw elegxei pali an anoije to arxeio
+        fscanf(file, "Contact time creation: %[^\n]\n", contact.creation_date);
+        fscanf(file, "\nName: %[^\n]\n", contact.name);
+        fscanf(file, "Surname: %[^\n]\n", contact.surname);
+        fscanf(file, "Address: %[^\n]\n", contact.address);
+        fscanf(file, "Phone: %[^\n]\n", contact.phone);
+        fscanf(file, "Email: %[^\n]\n", contact.email);
+        fclose(file);	
+    } else {		//se periptwsi pou den anoije
+        printf("Error reading contact.\n");
+    }
+    return contact;		// epistrefei to contact
+}
+
+//////////////////////////     TELOS PLIROFORIES EPAFIS      ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      DIMIOYRGIA EPAFIS     ///////////////////////////////
+//  sinartisi pou dimiourgei epafi
+
+void create_contact() {
+    if (contact_count >= MAX_CONTACTS) {		// elegxos an mporei na dimiourgisei
+        printf("Contact list is full. No more contacts.\n");	// alli epafi i exei
+        return;		// ftasei tis 100
+    }
+    Contact new_contact;
+    new_contact.id = contact_count + 1;		//dimiourgia id
+
+    printf("Enter first name: ");			// onoma epafis
+    fgets(new_contact.name, sizeof(new_contact.name), stdin);
+    new_contact.name[strcspn(new_contact.name, "\n")]=0;
+    
+    printf("Enter last name: ");	// epitheto epafis
+    fgets(new_contact.surname, sizeof(new_contact.surname), stdin);
+    new_contact.surname[strcspn(new_contact.surname, "\n")]=0;
+
+    printf("Enter address: ");	//dieuthinsi epafis
+    fgets(new_contact.address, sizeof(new_contact.address), stdin);
+    new_contact.address[strcspn(new_contact.address, "\n")]=0;
+
+    while (1) {		// atermon vrogxos mexri na ginei break diladi mexri na einai swsto to tilefwno
+        printf("Enter phone number: ");
+        fgets(new_contact.phone, sizeof(new_contact.phone), stdin);
+        new_contact.phone[strcspn(new_contact.phone, "\n")]=0;
+        if (strlen(new_contact.phone) >= 10 && strlen(new_contact.phone) <= 15) 
+		break;
+        printf("Invalid phone number. Please re-enter the phone number.\n");
+    }
+
+    while (1) {		// atermon vrogxos mexri na ginei break diladi mexri na einai swsto to email
+        printf("Enter email: ");
+        fgets(new_contact.email, sizeof(new_contact.email), stdin);
+        new_contact.email[strcspn(new_contact.email, "\n")]=0;
+        if (strchr(new_contact.email, '@') && strrchr(new_contact.email, '.')) 
+		break;
+        printf("Invalid email address. Please re-enter the email.\n");
+    }
+
+	// eisagei tin trexousa wra dimiourgias tis epafis
+    get_current_time(new_contact.creation_date, sizeof(new_contact.creation_date));
+
+    contacts[contact_count++] = new_contact;	//athroisma twn epafwn
+    save_contact_to_file(new_contact);
+    printf("Contact created successfully.\n"); 	// epitixis dimiourgia epafis
+}
+
+//////////////////////////      TELOS DIMIOYRGIAS EPAFIS     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      EPEJERGASIA EPAFWN     ///////////////////////////////
+// sinartisi gia tin epejergasia twn epafwn
+
+void edit_contact() {	
+
+    char search_term[50];
+    int search_choice, id;
+    printf("Search by:\n1. Name\n2. Surname\n3. Phone\n4. Email\nEnter choice: ");
+    scanf("%d", &search_choice);
+    getchar();  
+
+    printf("Enter search term: ");
+    fgets(search_term, sizeof(search_term), stdin);
+    search_term[strcspn(search_term, "\n")]=0;
+
+		//epilogi gia tin epejergasia
+    int found=0;
+    int i=0;
+    for (i ; i<contact_count; i++) {
+        if ((search_choice == 1 && strcmp(contacts[i].name, search_term) == 0) ||
+            (search_choice == 2 && strcmp(contacts[i].surname, search_term) == 0) ||
+            (search_choice == 3 && strcmp(contacts[i].phone, search_term) == 0) ||
+            (search_choice == 4 && strcmp(contacts[i].email, search_term) == 0)) {
+            display_contact(contacts[i]);
+            found=1;
+        }
+    }
+		
+		//se periptwsi pou den vrethei i epafi
+    if (!found) {
+        printf("No contacts found.\n");
+        return;
+    }
+	int edit_choice, j=0;
+    printf("Enter the ID of the contact you want to edit: ");
+    scanf("%d", &id);		// eisagwgi tou id tis epafis
+    getchar();  
+    for (j; j < contact_count; j++) {
+        if (contacts[j].id == id) {
+            							// epilogi gia epejergasia
+            printf("What do you want to edit?\n1. Name\n2. Surname\n3. Address\n4. Phone\n5. Email\nEnter choice: ");
+            scanf("%d", &edit_choice);
+            getchar();  
+
+            switch (edit_choice) {		
+                case 1:
+                    printf("Enter new name: ");
+                    fgets(contacts[j].name, sizeof(contacts[j].name), stdin);
+                    contacts[j].name[strcspn(contacts[j].name, "\n")]=0;
+                    break;
+                case 2:
+                    printf("Enter new surname: ");
+                    fgets(contacts[j].surname, sizeof(contacts[j].surname), stdin);		//ti thelei na allajei stin epafi
+                    contacts[j].surname[strcspn(contacts[j].surname, "\n")]=0;
+                    break;
+                case 3:
+                    printf("Enter new address: ");
+                    fgets(contacts[j].address, sizeof(contacts[j].address), stdin);
+                    contacts[j].address[strcspn(contacts[j].address, "\n")]=0;
+                    break;
+                case 4:
+                    while (1) {
+                        printf("Enter new phone: ");
+                        fgets(contacts[j].phone, sizeof(contacts[j].phone), stdin);
+                        contacts[j].phone[strcspn(contacts[j].phone, "\n")]=0;
+                        if (strlen(contacts[j].phone) >= 10 && strlen(contacts[j].phone) <= 15) 
+						break;
+                        printf("Invalid phone number. Please re-enter the phone number.\n");
+                    }
+                    break;
+                case 5:
+                    while (1) {
+                        printf("Enter new email: ");
+                        fgets(contacts[j].email, sizeof(contacts[j].email), stdin);
+                        contacts[j].email[strcspn(contacts[j].email, "\n")] = 0;
+                        if (strchr(contacts[j].email, '@') && strrchr(contacts[j].email, '.')) 
+						break;
+                        printf("Invalid email address. Please re-enter the email.\n");
+                    }
+                    break;
+                default:
+                    printf("Invalid choice.\n");	//se lathos periptwsi
+                    return;
+            }
+            printf("Contact updated successfully.\n");	//minima epitixis enimerwsis tis epafis
+            save_contact_to_file(contacts[j]);
+            break;
+        }
+    }
+}
+
+//////////////////////////      TELOS EPEJERGASIAS EPAFWN     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      ANAZITISI CONTACTS     ///////////////////////////////
+// sinartisi gia anazitisi epafis
+
+void search_contact() {
+    char search_term[50];
+    int search_choice;	//epilogi
+    printf("Search by:\n1. Name\n2. Surname\n3. Phone\n4. Email\nEnter choice: ");
+    scanf("%d", &search_choice);
+    getchar();
+
+    printf("Enter search term: ");
+    fgets(search_term, sizeof(search_term), stdin);
+    search_term[strcspn(search_term, "\n")] = 0;
+
+    int found=0;
+    int i=0;
+    for (i; i < contact_count; i++) {
+        if ((search_choice == 1 && strcmp(contacts[i].name, search_term) == 0) ||
+            (search_choice == 2 && strcmp(contacts[i].surname, search_term) == 0) ||
+            (search_choice == 3 && strcmp(contacts[i].phone, search_term) == 0) ||
+            (search_choice == 4 && strcmp(contacts[i].email, search_term) == 0)) {
+            display_contact(contacts[i]);
+            found=1;
+        }
+    }
+
+    if (!found) {
+        printf("No contacts found.\n");	//lanthasmeni periptwsi
+    }
+}
+
+//////////////////////////      TELOS ANAZITISIS CONTACTS     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      TAJINOMISI CONTACTS ME ONOMA     ///////////////////////////////
+//sinartisi gia tajinomisi twn epafwn me vasi to onoma
+
+void sort_contacts_by_name() {
+	int i=0, j;
+    for (i; i < contact_count-1; i++) {
+        for (j = i+1; j < contact_count; j++) {
+            if (strcmp(contacts[i].name, contacts[j].name) > 0) {
+                Contact temp = contacts[i];
+                contacts[i] = contacts[j];		//tajinomisi
+                contacts[j] = temp;
+            }
+        }
+    }
+}
+
+//////////////////////////      TELOS TAJINOMISIS CONTACTS ME ONOMA     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      TAJINOMISI CONTACTS ME IMEROMINIA     ///////////////////////////////
+//sinartisi gia tajinomisi me vasi to pote dimiourgithikan
+
+void sort_contacts_by_creation_date() {
+	int i=0,j;
+    for (i; i < contact_count-1; i++) {
+        for (j = i + 1; j < contact_count; j++) {
+            if (strcmp(contacts[i].creation_date, contacts[j].creation_date) > 0) {
+                Contact temp = contacts[i];
+                contacts[i] = contacts[j];	//tajinomisi
+                contacts[j] = temp;
+            }
+        }
+    }
+}
+
+//////////////////////////      TELOS TAJINOMISIS CONTACTS ME IMEROMINIA     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      VIEW CONTACTS     ///////////////////////////////
+//sinartisi gia provoli epafwn
+
+void view_contacts() {
+	int i=0;
+    int sort_choice;
+    printf("Sort contacts by:\n1. Name\n2. Creation Date\nEnter choice: ");
+    scanf("%d", &sort_choice);
+    getchar();
+
+    if (sort_choice == 1) {
+        sort_contacts_by_name();
+    } else if (sort_choice == 2) {
+        sort_contacts_by_creation_date();
+    } else {
+        printf("Invalid choice. Displaying unsorted contacts.\n");   //lathos epilogi
+    }
+
+    for (i; i < contact_count; i++) {
+        display_contact(contacts[i]);
+    }
+}
+
+//////////////////////////      TELOS VIEW CONTACTS     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      DISPLAY STATISTICS     ///////////////////////////////
+//sinartisi gia tin emfanisi statistikwn
+
+void display_statistics() {
+    printf("Statistics:\n");
+    printf("Total contacts: %d\n", contact_count);
+    if (contact_count > 0) {
+        printf("First contact creation date: %s\n", contacts[0].creation_date);
+        printf("Most recent contact creation date: %s\n", contacts[contact_count-1].creation_date);
+    }
+}
+
+//////////////////////////      TELOS DISPLAY STATISTICS     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      SETTINGS MENU     ///////////////////////////////
+//sinartisi gia tin dimiourgia menu
+
+void settings_menu() {
+    int choice;
+    while (1) {
+        printf("Settings:\n");
+        printf("1 - Display statistics\n");
+        printf("0 - Return to main menu\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        getchar();
+        switch (choice) {
+            case 1:
+                display_statistics();
+                break;
+            case 0:
+                return;
+            default:
+                printf("Invalid choice. Please try again.\n"); //perptwsi lathous
+        }
+    }
+}
+
+//////////////////////////     TELOS SETTINGS MENU     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      MENU     ///////////////////////////////
+
+//sinartisi gia tin dimiourgia menu
+
+void display_menu() {
+    printf("WELCOME TO PHONE BOOK APPLICATION.\n");
+    printf("Please select one of the following options:\n");
+    printf("1 - Create a new contact\n");
+    printf("2 - Edit an existing contact\n");
+    printf("3 - Search (and view) an existing contact\n");
+    printf("4 - View all contacts - Sort\n");
+    printf("5 - Settings\n");
+    printf("0 - Exit\n");
+}
+
+//////////////////////////      TELOS MENU     ///////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////      MAIN      ///////////////////////////////
+
+
+int main() {
+	system("mkdir -p contacts");
+	
+    int choice;
+    while (1) {		//dimiourgia atermwn vrogxou ews otou o xristis patisei '0'
+        display_menu();				//line 461
+        scanf("%d", &choice);
+        getchar();
+        switch (choice) {	//ejartate ti periptwsi tha dialejei o xristis
+            case 1:
+                create_contact();  	//line 136
+                break;
+            case 2:
+                edit_contact();		//line 193
+                break;
+            case 3:
+                search_contact();	//line 290
+                break;
+            case 4:
+                view_contacts();	//line 377
+                break;
+            case 5:
+                settings_menu();	//line 428
+                break;
+            case 0:
+                printf("Exiting application.\n");
+                exit(0);
+            default:
+                printf("Invalid choice. Please try again.\n"); 	//minima gia lathos epilogi
+        }
+    }
+    return 0;
+}
+
+//////////////////////////      TELOS MAIN      ///////////////////////////////
+/////////////////////////     TELOS ERGASIAS    ///////////////////////////////
